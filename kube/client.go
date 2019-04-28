@@ -2,9 +2,8 @@ package kube
 
 import (
 	"fmt"
+	"log"
 	"time"
-
-	"github.com/Sirupsen/logrus"
 
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
@@ -43,7 +42,7 @@ func NewKubeOutClusterClient(config []byte) (clientset.Interface, error) {
 func loadKubeConfig(config []byte) (*rest.Config, error) {
 	c, err := clientcmd.Load(config)
 	if err != nil {
-		logrus.Errorf("unable to load config: %v", err)
+		log.Fatalf("unable to load config: %v", err)
 		return nil, err
 	}
 	clientConfig := clientcmd.NewDefaultClientConfig(*c, &clientcmd.ConfigOverrides{})

@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/maoqide/kubeutil/kube"
@@ -42,7 +41,7 @@ func main() {
 func NewKubeCommand() *cobra.Command {
 	opt, err := options.NewkubeOptions()
 	if err != nil {
-		logrus.Fatalf("unable to initialize command options: %v", err)
+		log.Fatalf("unable to initialize command options: %v", err)
 	}
 	var flags *pflag.FlagSet
 
@@ -55,8 +54,7 @@ func NewKubeCommand() *cobra.Command {
 			}
 			var stopCh = make(chan struct{})
 			go run(stopCh)
-			wait(func() {}, stopCh)
-
+			wait(func() { fmt.Println("exiting.") }, stopCh)
 		},
 	}
 	flags = cmd.Flags()
@@ -77,21 +75,20 @@ func printHelp() {
 }
 
 func run(stopCh <-chan struct{}) {
-	fmt.Println("run")
 	kubeConfig, _ := utils.ReadFile("./config")
 	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
 	sharedInformerFactory, _ := kube.NewSharedInformerFactory(kubeC)
 	podInformer := sharedInformerFactory.Core().V1().Pods().Informer()
-	fmt.Println("iiiii")
+	podHandler := kube.NewPodHandler()
 	podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			fmt.Printf("add \n")
+			podHandler.HandleAdd(kube.EVENTADD, obj)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			fmt.Printf("update \n")
+			podHandler.HandleUpdate(kube.EVENTUPDATE, oldObj, newObj)
 		},
 		DeleteFunc: func(obj interface{}) {
-			fmt.Printf("delete %+v\n", obj.(*v1.Pod))
+			podHandler.HandleDel(kube.EVENTDELETE, obj)
 		},
 	})
 	podInformer.Run(stopCh)
@@ -112,7 +109,6 @@ func wait(f func(), stopCh chan struct{}) {
 	for {
 		select {
 		case <-exit:
-			fmt.Println("exiting.")
 			close(stopCh)
 			f()
 			return
