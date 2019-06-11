@@ -53,3 +53,7 @@ func (handler *PodHandler) HandleUpdate(etype EventType, oldObj, newObj interfac
 	log.Printf("handle pod update event, old: %s, new: %s, %s", oldPod.Name, newPod.Name, oldPod.Namespace)
 	return
 }
+
+// Process get event from queue and handle it
+func (handler *PodHandler) Process() {
+}
