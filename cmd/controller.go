@@ -58,7 +58,7 @@ func run(stopCh <-chan struct{}) {
 	sharedInformerFactory, _ := kube.NewSharedInformerFactory(kubeC)
 	podInformer := sharedInformerFactory.Core().V1().Pods()
 	demoController := demo.NewDemoController(podInformer)
-	go podInformer.Informer().Run(stopCh)
+	go sharedInformerFactory.Start(stopCh)
 	demoController.Run(5, stopCh)
 	fmt.Println("exit")
 }
