@@ -1,4 +1,4 @@
-package cmd
+package app
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	cmdutil "github.com/maoqide/kubeutil/cmd"
 	"github.com/maoqide/kubeutil/controllers/demo"
 	"github.com/maoqide/kubeutil/initialize"
 	"github.com/maoqide/kubeutil/kube"
@@ -32,7 +33,7 @@ func NewKubeCommand() *cobra.Command {
 			}
 			var stopCh = make(chan struct{})
 			go run(stopCh)
-			wait(func() { fmt.Println("exiting.") }, stopCh)
+			cmdutil.Wait(func() { fmt.Println("exiting.") }, stopCh)
 		},
 	}
 	flags = cmd.Flags()
