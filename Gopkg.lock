@@ -10,6 +10,17 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:ecdc8e0fe3bc7d549af1c9c36acf3820523b707d6c071b6d0c3860882c6f7b42"
+  name = "github.com/docker/spdystream"
+  packages = [
+    ".",
+    "spdy",
+  ]
+  pruneopts = "UT"
+  revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
+
+[[projects]]
   digest = "1:4d02824a56d268f74a6b6fdd944b20b58a77c3d70e81008b3ee0c4f1a6777340"
   name = "github.com/gogo/protobuf"
   packages = [
@@ -67,6 +78,22 @@
   pruneopts = "UT"
   revision = "e73c7ec21d36ddb0711cb36d1502d18363b5c2c9"
   version = "v0.3.0"
+
+[[projects]]
+  digest = "1:cbec35fe4d5a4fba369a656a8cd65e244ea2c743007d8f6c1ccb132acf9d1296"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15"
+  version = "v1.7.3"
+
+[[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:d15ee511aa0f56baacc1eb4c6b922fa1c03b38413b6be18166b996d82a0156ea"
@@ -292,7 +319,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fa560e381357b57b152b72c0e8e5c726291c1ce75f037a5496872cb8b969f641"
+  digest = "1:8196d8392aa8c445e5de743d2d19197b8546f1db5639964af2653c5f73ab0497"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -321,10 +348,13 @@
     "pkg/util/diff",
     "pkg/util/errors",
     "pkg/util/framer",
+    "pkg/util/httpstream",
+    "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
     "pkg/util/naming",
     "pkg/util/net",
+    "pkg/util/remotecommand",
     "pkg/util/runtime",
     "pkg/util/sets",
     "pkg/util/validation",
@@ -333,13 +363,14 @@
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/netutil",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
   revision = "0bb8574e088758c5d6ce95255a1318672cbe4b7c"
 
 [[projects]]
-  digest = "1:f2d5e0fd1458c4c6698a081e579e8ead41e4dcde66cfac0b3341aa3d1e9ddc6a"
+  digest = "1:d4b3b7b65b6147d336d5f703469772a113a8ec95dc94c52c1a06677d8a1baee2"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -480,9 +511,12 @@
     "tools/metrics",
     "tools/pager",
     "tools/reference",
+    "tools/remotecommand",
     "transport",
+    "transport/spdy",
     "util/cert",
     "util/connrotation",
+    "util/exec",
     "util/flowcontrol",
     "util/homedir",
     "util/keyutil",
@@ -525,14 +559,22 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/gorilla/mux",
+    "github.com/gorilla/websocket",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/client-go/informers",
+    "k8s.io/client-go/informers/core/v1",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/listers/core/v1",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/remotecommand",
     "k8s.io/client-go/util/workqueue",
   ]
   solver-name = "gps-cdcl"

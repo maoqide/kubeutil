@@ -28,7 +28,7 @@ func NewKubeInClusterClient() (clientset.Interface, error) {
 
 // NewKubeOutClusterClient creates a out cluster kubernetes clientset interface
 func NewKubeOutClusterClient(config []byte) (clientset.Interface, error) {
-	cfg, err := loadKubeConfig(config)
+	cfg, err := LoadKubeConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize inclusterconfig: %v", err)
 	}
@@ -39,7 +39,8 @@ func NewKubeOutClusterClient(config []byte) (clientset.Interface, error) {
 	return clientset, nil
 }
 
-func loadKubeConfig(config []byte) (*rest.Config, error) {
+// LoadKubeConfig return *rest.Config from bytes.
+func LoadKubeConfig(config []byte) (*rest.Config, error) {
 	c, err := clientcmd.Load(config)
 	if err != nil {
 		log.Fatalf("unable to load config: %v", err)
