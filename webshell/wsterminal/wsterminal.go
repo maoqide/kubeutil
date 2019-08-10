@@ -63,6 +63,7 @@ func (t *TerminalSession) Next() *remotecommand.TerminalSize {
 func (t *TerminalSession) Read(p []byte) (int, error) {
 	_, message, err := t.wsConn.ReadMessage()
 	if err != nil {
+		log.Printf("read message err: %v", err)
 		return copy(p, webshell.EndOfTransmission), err
 	}
 	var msg webshell.TerminalMessage
@@ -78,6 +79,8 @@ func (t *TerminalSession) Read(p []byte) (int, error) {
 		t.sizeChan <- remotecommand.TerminalSize{Width: msg.Cols, Height: msg.Rows}
 		return 0, nil
 	default:
+		log.Printf("unknown message type '%s'", msg.Operation)
+		// return 0, nil
 		return copy(p, webshell.EndOfTransmission), fmt.Errorf("unknown message type '%s'", msg.Operation)
 	}
 }
@@ -93,6 +96,7 @@ func (t *TerminalSession) Write(p []byte) (int, error) {
 		return 0, err
 	}
 	if err := t.wsConn.WriteMessage(websocket.TextMessage, msg); err != nil {
+		log.Printf("write message err: %v", err)
 		return 0, err
 	}
 	return len(p), nil

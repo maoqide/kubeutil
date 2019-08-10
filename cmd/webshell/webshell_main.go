@@ -27,21 +27,16 @@ func internalError(ws *websocket.Conn, msg string, err error) {
 	ws.WriteMessage(websocket.TextMessage, []byte("Internal server error."))
 }
 
-var upgrader = websocket.Upgrader{}
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
+func serveTerminal(w http.ResponseWriter, r *http.Request) {
+	// auth
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "home.html")
+	http.ServeFile(w, r, "./frontend/terminal.html")
 }
 
-func serve(w http.ResponseWriter, r *http.Request) {
+func serveWs(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	namspace := pathParams["namespace"]
 	pod := pathParams["pod"]
@@ -57,6 +52,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		log.Println("close session.")
 		pty.Close()
 	}()
+	// TODO: share kube client.
 	kubeConfig, _ := utils.ReadFile("./config")
 	cfg, _ := kube.LoadKubeConfig(kubeConfig)
 	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
@@ -69,8 +65,8 @@ func serve(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/", serveHome)
-	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serve)
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
+	router.HandleFunc("/terminal/{namespace}/{pod}/{container_name}", serveTerminal)
+	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serveWs)
 	log.Fatal(http.ListenAndServe(*addr, router))
-
 }

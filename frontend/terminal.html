@@ -1,0 +1,43 @@
+<!-- <!doctype html> -->
+<html>
+<head>
+    <link rel="stylesheet" href="/static/dist/xterm.css" />
+    <script src="/static/dist/xterm.js"></script>
+    <script src="/static/dist/addons/fit/fit.js"></script>
+    <script src="/static/terminal.js"></script>
+    <!-- <script src="static/dist/addons/fullscreen/fullscreen.js"></script> -->
+    <!-- <script src="static/dist/addons/fullscreen/fullscreen.css"></script> -->
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<style>
+		h1 {
+ 		   text-align: center;
+		}
+	    #terminal .terminal.xterm {
+			height: 100%;
+	    }
+	    #terminal .xterm-viewport {
+			height: 100%;
+	    }
+		#terminal {
+			height: 100%;
+			width: 100%;
+			padding: 0%;
+			padding-bottom: 5%;
+			margin: 0%;
+	    }
+	</style>
+</head>
+
+<body style="border-width: 0;margin: 0">
+	<div id="terminal"></div>
+<script>
+	window.onload = function () {
+		Terminal.applyAddon(fit);
+		// Terminal.applyAddon(fullscreen);
+		uri = geturi();
+		console.log(uri);
+		params=getParams(uri);
+		connect(params);
+	};
+</script>
+</body>
