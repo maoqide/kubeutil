@@ -1,11 +1,13 @@
 package webshell
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"time"
 
-	coresv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -56,7 +58,7 @@ func ExecPod(kubeClient kubernetes.Interface, cfg *rest.Config, cmd []string, pt
 		Namespace(namespace).
 		SubResource("exec")
 
-	req.VersionedParams(&coresv1.PodExecOptions{
+	req.VersionedParams(&corev1.PodExecOptions{
 		Container: containerName,
 		Command:   cmd,
 		Stdin:     true,
@@ -83,4 +85,21 @@ func ExecPod(kubeClient kubernetes.Interface, cfg *rest.Config, cmd []string, pt
 		return err
 	}
 	return nil
+}
+
+// ValidatePod validate pod.
+func ValidatePod(kubeClient kubernetes.Interface, namespace, podName, containerName string) (bool, error) {
+	pod, err := kubeClient.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
+		return false, fmt.Errorf("cannot exec into a container in a completed pod; current phase is %s", pod.Status.Phase)
+	}
+	for _, c := range pod.Spec.Containers {
+		if containerName == c.Name {
+			return true, nil
+		}
+	}
+	return false, fmt.Errorf("pod has no container '%s'", containerName)
 }

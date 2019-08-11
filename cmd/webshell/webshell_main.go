@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -38,10 +39,10 @@ func serveTerminal(w http.ResponseWriter, r *http.Request) {
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
-	namspace := pathParams["namespace"]
+	namespace := pathParams["namespace"]
 	pod := pathParams["pod"]
 	containerName := pathParams["container_name"]
-	log.Printf("exec pod: %s, container: %s, namespace: %s", pod, containerName, namspace)
+	log.Printf("exec pod: %s, container: %s, namespace: %s", pod, containerName, namespace)
 
 	pty, err := wsterminal.NewTerminalSession(w, r, nil)
 	if err != nil {
@@ -56,9 +57,21 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	kubeConfig, _ := utils.ReadFile("./config")
 	cfg, _ := kube.LoadKubeConfig(kubeConfig)
 	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
-	err = webshell.ExecPod(kubeC, cfg, []string{"/bin/bash"}, pty, namspace, pod, containerName)
+	ok, err := webshell.ValidatePod(kubeC, namespace, pod, containerName)
+	if !ok {
+		// msg := fmt.Sprintf("Invalid pod!! namespace: %s, pod: %s, container: %s", namespace, pod, containerName)
+		msg := fmt.Sprintf("Invalid pod! err: %v", err)
+		log.Println(msg)
+		pty.Write([]byte(msg))
+		pty.Done()
+		return
+	}
+	err = webshell.ExecPod(kubeC, cfg, []string{"/bin/bash"}, pty, namespace, pod, containerName)
 	if err != nil {
-		log.Printf("exec err %v", err)
+		msg := fmt.Sprintf("Exec to pod error! err: %v", err)
+		log.Println(msg)
+		pty.Write([]byte(msg))
+		pty.Done()
 	}
 	return
 }

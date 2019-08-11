@@ -44,6 +44,7 @@ function connect(params){
 			conn.send(JSON.stringify(msg))
 		});
 		term.on('resize', function (size) {
+			console.log("resize: " + size)
 			msg = {operation: "resize", cols: size.cols, rows: rows}
 			conn.send(JSON.stringify(msg))
 		});
@@ -68,10 +69,12 @@ function connect(params){
 				console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
 			} else {
 				console.log('[close] Connection died');
+				term.writeln("")
 			}
-			term.write('Connection Reset By Peer');
+			term.write('Connection Reset By Peer! Try Refresh.');
 		};
 		conn.onerror = function(error) {
+			console.log('[error] Connection error');
 			term.write("error: "+error.message);
 			term.destroy();
 		};
