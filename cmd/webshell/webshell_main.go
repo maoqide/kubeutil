@@ -21,6 +21,7 @@ import (
 
 var (
 	addr = flag.String("addr", ":8090", "http service address")
+	cmd  = []string{"/bin/bash"}
 )
 
 func internalError(ws *websocket.Conn, msg string, err error) {
@@ -66,7 +67,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		pty.Done()
 		return
 	}
-	err = webshell.ExecPod(kubeC, cfg, []string{"/bin/bash"}, pty, namespace, pod, containerName)
+	err = webshell.ExecPod(kubeC, cfg, cmd, pty, namespace, pod, containerName)
 	if err != nil {
 		msg := fmt.Sprintf("Exec to pod error! err: %v", err)
 		log.Println(msg)
