@@ -21,7 +21,7 @@ import (
 
 var (
 	addr = flag.String("addr", ":8090", "http service address")
-	cmd  = []string{"/bin/bash"}
+	cmd  = []string{"/bin/sh"}
 )
 
 func internalError(ws *websocket.Conn, msg string, err error) {
@@ -80,7 +80,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
-	router.HandleFunc("/terminal/{namespace}/{pod}/{container_name}", serveTerminal)
+	router.HandleFunc("/terminal", serveTerminal)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serveWs)
 	log.Fatal(http.ListenAndServe(*addr, router))
 }

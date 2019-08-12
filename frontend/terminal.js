@@ -1,33 +1,21 @@
-function geturi() {
-　　　　var url = document.location.toString();
-　　　　var arrUrl = url.split("//");
-　　　　var start = arrUrl[1].indexOf("/");
-　　　　var uri = arrUrl[1].substring(start+1);
-　　　　if(uri.indexOf("?") != -1){
-　　　　　　uri = uri.split("?")[0];
-　　　　}
-　　　　return uri;
-}
-
-function getParams(uri) {
-	var params = uri.split("/")
-	if (params.length != 4 ){
-		return []
+function getQueryVariable(variable) {
+	let query = window.location.search.substring(1);
+	let vars = query.split("&");
+	for (let i=0;i<vars.length;i++) {
+			let pair = vars[i].split("=");
+			if(pair[0] == variable){return pair[1];}
 	}
-	namespace=params[1]
-	pod=params[2]
-	container_name=params[3]
-	return[namespace, pod, container_name]
+	return(false);
 }
 
-function connect(params){
-	if (params.length == 0) {
+function connect(){
+	namespace=getQueryVariable("namespace")
+	pod=getQueryVariable("pod")
+	container_name=getQueryVariable("container_name")
+	if (namespace == false || pod == false || container_name == false) {
 		alert("无法获取到容器，请联系管理员")
 		return
 	}
-	namespace=params[0]
-	pod=params[1]
-	container_name=params[2]
 	console.log(namespace ,pod ,container_name)
 	url = "ws://"+document.location.host+"/ws/"+namespace+"/"+pod+"/"+container_name+"/webshell"
 	console.log(url);
