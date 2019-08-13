@@ -61,7 +61,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	ok, err := webshell.ValidatePod(kubeC, namespace, pod, containerName)
 	if !ok {
 		// msg := fmt.Sprintf("Invalid pod!! namespace: %s, pod: %s, container: %s", namespace, pod, containerName)
-		msg := fmt.Sprintf("Invalid pod! err: %v", err)
+		msg := fmt.Sprintf("Validate pod error! err: %v", err)
 		log.Println(msg)
 		pty.Write([]byte(msg))
 		pty.Done()
