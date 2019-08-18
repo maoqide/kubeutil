@@ -5,3 +5,4 @@ useful utils for kubernetes related development.
    it works just like buildin controllers in kubernetes and the code too.    
 
 2. implemented webshell to pod in kubernetes cluster.     
+   [introduction](http://maoqide.live/post/cloud/kubernetes-webshell/)    
