@@ -57,8 +57,11 @@ func run(stopCh <-chan struct{}) {
 	kubeConfig, _ := utils.ReadFile("./config")
 	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
 	sharedInformerFactory, _ := kube.NewSharedInformerFactory(kubeC)
-	podInformer := sharedInformerFactory.Core().V1().Pods()
-	demoController := demo.NewDemoController(podInformer)
+	demoController := demo.NewDemoController(
+		sharedInformerFactory.Core().V1().Pods(),
+		sharedInformerFactory.Apps().V1().Deployments(),
+		sharedInformerFactory.Apps().V1().StatefulSets(),
+	)
 	go sharedInformerFactory.Start(stopCh)
 	demoController.Run(5, stopCh)
 	fmt.Println("exit")
