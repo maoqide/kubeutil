@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"k8s.io/client-go/tools/remotecommand"
@@ -12,7 +13,14 @@ import (
 	"github.com/maoqide/kubeutil/webshell"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = func() websocket.Upgrader {
+	upgrader := websocket.Upgrader{}
+	upgrader.HandshakeTimeout = time.Second * 2
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+	return upgrader
+}()
 
 // TerminalSession implements PtyHandler
 type TerminalSession struct {
@@ -77,6 +85,8 @@ func (t *TerminalSession) Read(p []byte) (int, error) {
 		return copy(p, msg.Data), nil
 	case "resize":
 		t.sizeChan <- remotecommand.TerminalSize{Width: msg.Cols, Height: msg.Rows}
+		return 0, nil
+	case "ping":
 		return 0, nil
 	default:
 		log.Printf("unknown message type '%s'", msg.Operation)
