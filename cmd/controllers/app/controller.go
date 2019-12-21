@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/maoqide/kubeutil/client"
 	cmdutil "github.com/maoqide/kubeutil/cmd"
 	"github.com/maoqide/kubeutil/controllers/demo"
 	"github.com/maoqide/kubeutil/initialize"
-	"github.com/maoqide/kubeutil/kube"
 	"github.com/maoqide/kubeutil/options"
 	"github.com/maoqide/kubeutil/utils"
 )
@@ -55,8 +55,8 @@ func printHelp() {
 
 func run(stopCh <-chan struct{}) {
 	kubeConfig, _ := utils.ReadFile("./config")
-	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
-	sharedInformerFactory, _ := kube.NewSharedInformerFactory(kubeC)
+	kubeC, _ := client.NewKubeOutClusterClient(kubeConfig)
+	sharedInformerFactory, _ := client.NewSharedInformerFactory(kubeC)
 	demoController := demo.NewDemoController(
 		sharedInformerFactory.Core().V1().Pods(),
 		sharedInformerFactory.Apps().V1().Deployments(),

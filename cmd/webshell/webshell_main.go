@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 
-	"github.com/maoqide/kubeutil/kube"
+	"github.com/maoqide/kubeutil/client"
 	"github.com/maoqide/kubeutil/utils"
 	"github.com/maoqide/kubeutil/webshell"
 	"github.com/maoqide/kubeutil/webshell/wsterminal"
@@ -56,8 +56,8 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}()
 	// TODO: share kube client.
 	kubeConfig, _ := utils.ReadFile("./config")
-	cfg, _ := kube.LoadKubeConfig(kubeConfig)
-	kubeC, _ := kube.NewKubeOutClusterClient(kubeConfig)
+	cfg, _ := client.LoadKubeConfig(kubeConfig)
+	kubeC, _ := client.NewKubeOutClusterClient(kubeConfig)
 	ok, err := webshell.ValidatePod(kubeC, namespace, pod, containerName)
 	if !ok {
 		// msg := fmt.Sprintf("Invalid pod!! namespace: %s, pod: %s, container: %s", namespace, pod, containerName)
