@@ -4,9 +4,10 @@ import k8sruntime "k8s.io/apimachinery/pkg/runtime"
 
 // Options template options for containers
 type Options struct {
-	Name  string
-	Image string
-	Port  string
+	Name      string
+	Namespace string
+	Image     string
+	Port      string
 }
 
 // Wrapper  wrapper interface for kubernetes resource
