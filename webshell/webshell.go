@@ -3,14 +3,9 @@ package webshell
 import (
 	"fmt"
 	"io"
-	"log"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -50,49 +45,8 @@ type TerminalMessage struct {
 	Cols      uint16 `json:"cols"`
 }
 
-// ExecPod do pod exec
-func ExecPod(kubeClient kubernetes.Interface, cfg *rest.Config, cmd []string, ptyHandler PtyHandler, namespace, podName, containerName string) error {
-	req := kubeClient.CoreV1().RESTClient().Post().
-		Resource("pods").
-		Name(podName).
-		Namespace(namespace).
-		SubResource("exec")
-
-	req.VersionedParams(&corev1.PodExecOptions{
-		Container: containerName,
-		Command:   cmd,
-		Stdin:     true,
-		Stdout:    true,
-		Stderr:    true,
-		TTY:       true,
-	}, scheme.ParameterCodec)
-
-	executor, err := remotecommand.NewSPDYExecutor(cfg, "POST", req.URL())
-	if err != nil {
-		log.Printf("NewSPDYExecutor err: %v", err)
-		return err
-	}
-
-	err = executor.Stream(remotecommand.StreamOptions{
-		Stdin:             ptyHandler,
-		Stdout:            ptyHandler,
-		Stderr:            ptyHandler,
-		TerminalSizeQueue: ptyHandler,
-		Tty:               true,
-	})
-	if err != nil {
-		log.Printf("Stream err: %v", err)
-		return err
-	}
-	return nil
-}
-
 // ValidatePod validate pod.
-func ValidatePod(kubeClient kubernetes.Interface, namespace, podName, containerName string) (bool, error) {
-	pod, err := kubeClient.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
-	if err != nil {
-		return false, err
-	}
+func ValidatePod(pod *corev1.Pod, containerName string) (bool, error) {
 	if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
 		return false, fmt.Errorf("cannot exec into a container in a completed pod; current phase is %s", pod.Status.Phase)
 	}
