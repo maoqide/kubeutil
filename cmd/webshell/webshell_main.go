@@ -37,45 +37,6 @@ func serveTerminal(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/terminal.html")
 }
 
-// func serveWs(w http.ResponseWriter, r *http.Request) {
-// 	pathParams := mux.Vars(r)
-// 	namespace := pathParams["namespace"]
-// 	pod := pathParams["pod"]
-// 	containerName := pathParams["container_name"]
-// 	log.Printf("exec pod: %s, container: %s, namespace: %s", pod, containerName, namespace)
-
-// 	pty, err := wsterminal.NewTerminalSession(w, r, nil)
-// 	if err != nil {
-// 		log.Printf("get pty failed: %v", err)
-// 		return
-// 	}
-// 	defer func() {
-// 		log.Println("close session.")
-// 		pty.Close()
-// 	}()
-// 	// TODO: share kube client.
-// 	kubeConfig, _ := utils.ReadFile("./config")
-// 	cfg, _ := client.LoadKubeConfig(kubeConfig)
-// 	kubeC, _ := client.NewKubeOutClusterClient(kubeConfig)
-// 	ok, err := webshell.ValidatePod(kubeC, namespace, pod, containerName)
-// 	if !ok {
-// 		// msg := fmt.Sprintf("Invalid pod!! namespace: %s, pod: %s, container: %s", namespace, pod, containerName)
-// 		msg := fmt.Sprintf("Validate pod error! err: %v", err)
-// 		log.Println(msg)
-// 		pty.Write([]byte(msg))
-// 		pty.Done()
-// 		return
-// 	}
-// 	err = webshell.ExecPod(kubeC, cfg, cmd, pty, namespace, pod, containerName)
-// 	if err != nil {
-// 		msg := fmt.Sprintf("Exec to pod error! err: %v", err)
-// 		log.Println(msg)
-// 		pty.Write([]byte(msg))
-// 		pty.Done()
-// 	}
-// 	return
-// }
-
 func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	namespace := pathParams["namespace"]
