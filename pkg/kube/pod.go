@@ -89,6 +89,9 @@ func (b *PodBox) WatchPod(namespace, podName string, timeoutSeconds *int64) (wat
 
 // Exec exec into a pod
 func (b *PodBox) Exec(cmd []string, ptyHandler webshell.PtyHandler, namespace, podName, containerName string) error {
+	defer func() {
+		ptyHandler.Done()
+	}()
 	cfg, err := kubeclient.Config()
 	if err != nil {
 		return err

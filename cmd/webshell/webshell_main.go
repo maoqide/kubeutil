@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -94,9 +95,11 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
+	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
 	router.HandleFunc("/terminal", serveTerminal)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serveWsTerminal)
-	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/logs", serveWsTerminal)
+	// TODO
+	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/logs", serveLogs)
 	log.Fatal(http.ListenAndServe(*addr, router))
 }

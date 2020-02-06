@@ -52,9 +52,9 @@ func NewTerminalSession(w http.ResponseWriter, r *http.Request, responseHeader h
 	return session, nil
 }
 
-// Done done
-func (t *TerminalSession) Done() chan struct{} {
-	return t.doneChan
+// Done done, must call Done() before connection close, or Next() would not exits.
+func (t *TerminalSession) Done() {
+	close(t.doneChan)
 }
 
 // Next called in a loop from remotecommand as long as the process is running
