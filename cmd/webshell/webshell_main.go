@@ -37,6 +37,15 @@ func serveTerminal(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./frontend/terminal.html")
 }
 
+func serveLogs(w http.ResponseWriter, r *http.Request) {
+	// auth
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "./frontend/logs.html")
+}
+
 func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	namespace := pathParams["namespace"]
@@ -88,5 +97,6 @@ func main() {
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
 	router.HandleFunc("/terminal", serveTerminal)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serveWsTerminal)
+	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/logs", serveWsTerminal)
 	log.Fatal(http.ListenAndServe(*addr, router))
 }
