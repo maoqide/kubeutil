@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -32,6 +34,19 @@ func Int64Ptr(i int64) *int64 {
 // StringPtr convert string value to a pointer.
 func StringPtr(s string) *string {
 	return &s
+}
+
+func StringToInt64(s string) (int64, error) {
+	return strconv.ParseInt(s, 10, 64)
+}
+
+func StringToBool(s string) (bool, error) {
+	if s == "false" {
+		return false, nil
+	} else if s == "true" {
+		return true, nil
+	}
+	return false, errors.New("params error: should be true or false")
 }
 
 // ToValidUTF8 treats s as UTF-8-encoded bytes and returns a copy with each run of bytes

@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	corev1 "k8s.io/api/core/v1"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,6 +16,8 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/maoqide/kubeutil/pkg/kube"
+	"github.com/maoqide/kubeutil/utils"
+	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
 	"github.com/maoqide/kubeutil/webshell"
 	"github.com/maoqide/kubeutil/webshell/wsterminal"
 )
@@ -35,7 +38,7 @@ func serveTerminal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "./frontend/terminal.html")
+	http.ServeFile(w, r, "./../../frontend/terminal.html")
 }
 
 func serveLogs(w http.ResponseWriter, r *http.Request) {
@@ -44,14 +47,14 @@ func serveLogs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "./frontend/logs.html")
+	http.ServeFile(w, r, "./../../frontend/logs.html")
 }
 
 func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	namespace := pathParams["namespace"]
 	podName := pathParams["pod"]
-	containerName := pathParams["container_name"]
+	containerName := pathParams["container"]
 	log.Printf("exec pod: %s, container: %s, namespace: %s\n", podName, containerName, namespace)
 
 	pty, err := wsterminal.NewTerminalSession(w, r, nil)
@@ -76,7 +79,6 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 	}
 	ok, err := webshell.ValidatePod(pod, containerName)
 	if !ok {
-		// msg := fmt.Sprintf("Invalid pod!! namespace: %s, pod: %s, container: %s", namespace, pod, containerName)
 		msg := fmt.Sprintf("Validate pod error! err: %v", err)
 		log.Println(msg)
 		pty.Write([]byte(msg))
@@ -93,14 +95,68 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func serveWsLogs(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	namespace := pathParams["namespace"]
+	podName := pathParams["pod"]
+	containerName := pathParams["container"]
+	tailLine, _ := utils.StringToInt64(r.URL.Query().Get("tail"))
+	follow, _ := utils.StringToBool(r.URL.Query().Get("follow"))
+	log.Printf("log pod: %s, container: %s, namespace: %s, tailLine: %d, follow: %v\n", podName, containerName, namespace, tailLine, follow)
+
+	writer, err := kubeLog.NewWsLogger(w, r, nil)
+	if err != nil {
+		log.Printf("get writer failed: %v\n", err)
+		return
+	}
+	defer func() {
+		log.Println("close session.")
+		writer.Close()
+	}()
+
+	client, err := kube.GetClient()
+	if err != nil {
+		log.Printf("get kubernetes client failed: %v\n", err)
+		return
+	}
+	pod, err := client.PodBox.Get(podName, namespace)
+	if err != nil {
+		log.Printf("get kubernetes client failed: %v\n", err)
+		return
+	}
+	ok, err := webshell.ValidatePod(pod, containerName)
+	if !ok {
+		msg := fmt.Sprintf("Validate pod error! err: %v", err)
+		log.Println(msg)
+		writer.Write([]byte(msg))
+		writer.Close()
+		return
+	}
+
+	opt := corev1.PodLogOptions{
+		Container:    containerName,
+		Follow:       follow,
+		TailLines:    &tailLine,
+	}
+
+	err = client.PodBox.LogStreamLine(podName, namespace, &opt, writer)
+	if err != nil {
+		msg := fmt.Sprintf("log err: %v", err)
+		log.Println(msg)
+		writer.Write([]byte(msg))
+		writer.Close()
+	}
+	return
+}
+
 func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./../../frontend/"))))
 	// enter webshell by url like: http://127.0.0.1:8090/terminal?namespace=default&pod=nginx-65f9798fbf-jdrgl&container_name=nginx
 	router.HandleFunc("/terminal", serveTerminal)
-	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/webshell", serveWsTerminal)
-	// TODO
-	router.HandleFunc("/ws/{namespace}/{pod}/{container_name}/logs", serveLogs)
+	router.HandleFunc("/ws/{namespace}/{pod}/{container}/webshell", serveWsTerminal)
+	router.HandleFunc("/logs", serveLogs)
+	router.HandleFunc("/ws/{namespace}/{pod}/{container}/logs", serveWsLogs)
 	log.Fatal(http.ListenAndServe(*addr, router))
 }
