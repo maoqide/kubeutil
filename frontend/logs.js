@@ -22,7 +22,7 @@ function connect(){
 		alert("cannot get pod")
 		return
 	}
-]	url = "ws://"+document.location.host+"/ws/"+namespace+"/"+pod+"/"+container_name+"/logs?"
+	url = "ws://"+document.location.host+"/ws/"+namespace+"/"+pod+"/"+container_name+"/logs?"
 	if (tail != false) {
 		url = url+"&tail="+tail
 	}

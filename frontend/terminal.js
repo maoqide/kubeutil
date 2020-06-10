@@ -3,7 +3,9 @@ function getQueryVariable(variable) {
 	let vars = query.split("&");
 	for (let i=0;i<vars.length;i++) {
 			let pair = vars[i].split("=");
-			if(pair[0] == variable){return pair[1];}
+			if(pair[0] == variable){
+				return pair[1];
+			}
 	}
 	return(false);
 }
@@ -11,13 +13,14 @@ function getQueryVariable(variable) {
 function connect(){
 	namespace=getQueryVariable("namespace")
 	pod=getQueryVariable("pod")
-	container_name=getQueryVariable("container_name")
-	if (namespace == false || pod == false || container_name == false) {
+	container=getQueryVariable("container")
+	console.log(namespace ,pod ,container)
+	if (namespace == false || pod == false || container == false) {
 		alert("无法获取到容器，请联系管理员")
 		return
 	}
-	console.log(namespace ,pod ,container_name)
-	url = "ws://"+document.location.host+"/ws/"+namespace+"/"+pod+"/"+container_name+"/webshell"
+	console.log(namespace ,pod ,container)
+	url = "ws://"+document.location.host+"/ws/"+namespace+"/"+pod+"/"+container+"/webshell"
 	console.log(url);
 	let term = new Terminal({
 		"cursorBlink":true,
