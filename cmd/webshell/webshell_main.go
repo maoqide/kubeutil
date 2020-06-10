@@ -152,6 +152,8 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
+	// TODO
+	// temporarily use relative path, run by `go run cmd/webshell/webshell_main.go` in project root path.
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
 	// enter webshell by url like: http://127.0.0.1:8090/terminal?namespace=default&pod=nginx-65f9798fbf-jdrgl&container_name=nginx
 	router.HandleFunc("/terminal", serveTerminal)
