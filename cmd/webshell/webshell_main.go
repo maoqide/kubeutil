@@ -7,17 +7,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/maoqide/kubeutil/pkg/kube"
-	"github.com/maoqide/kubeutil/utils"
 	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
+	"github.com/maoqide/kubeutil/utils"
 	"github.com/maoqide/kubeutil/webshell"
 	"github.com/maoqide/kubeutil/webshell/wsterminal"
 )
@@ -38,7 +38,7 @@ func serveTerminal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "./../../frontend/terminal.html")
+	http.ServeFile(w, r, "./frontend/terminal.html")
 }
 
 func serveLogs(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +47,7 @@ func serveLogs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "./../../frontend/logs.html")
+	http.ServeFile(w, r, "./frontend/logs.html")
 }
 
 func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
@@ -134,9 +134,9 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	opt := corev1.PodLogOptions{
-		Container:    containerName,
-		Follow:       follow,
-		TailLines:    &tailLine,
+		Container: containerName,
+		Follow:    follow,
+		TailLines: &tailLine,
 	}
 
 	err = client.PodBox.LogStreamLine(podName, namespace, &opt, writer)
@@ -152,7 +152,7 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./../../frontend/"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
 	// enter webshell by url like: http://127.0.0.1:8090/terminal?namespace=default&pod=nginx-65f9798fbf-jdrgl&container_name=nginx
 	router.HandleFunc("/terminal", serveTerminal)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container}/webshell", serveWsTerminal)
