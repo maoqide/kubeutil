@@ -1,8 +1,6 @@
 package kube
 
 import (
-	kubeclient "github.com/maoqide/kubeutil/client"
-
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,15 +10,6 @@ import (
 // ServiceBox provide functions for kubernetes service.
 type ServiceBox struct {
 	clientset clientset.Interface
-}
-
-//NewServiceBox creates a ServiceBox
-func NewServiceBox() (*ServiceBox, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
-	return &ServiceBox{clientset: *c}, nil
 }
 
 // Get get specified service in specified namespace.

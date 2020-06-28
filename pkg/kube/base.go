@@ -31,8 +31,12 @@ func GetClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	cfg, err := kubeclient.Config()
+	if err != nil {
+		return nil, err
+	}
 	cli := Client{
-		&PodBox{clientset: *c},
+		&PodBox{clientset: *c, config: cfg},
 		&EventBox{clientset: *c},
 		&DeploymentBox{clientset: *c},
 		&ServiceBox{clientset: *c},

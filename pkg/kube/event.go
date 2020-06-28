@@ -1,8 +1,6 @@
 package kube
 
 import (
-	kubeclient "github.com/maoqide/kubeutil/client"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientset "k8s.io/client-go/kubernetes"
@@ -13,15 +11,6 @@ import (
 // EventBox provide functions for kubernetes event.
 type EventBox struct {
 	clientset clientset.Interface
-}
-
-//NewEventBox creates a EventBox
-func NewEventBox() (*EventBox, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
-	return &EventBox{clientset: *c}, nil
 }
 
 // Search search events with labelselectors

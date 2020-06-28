@@ -14,7 +14,6 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
-	kubeclient "github.com/maoqide/kubeutil/client"
 	"github.com/maoqide/kubeutil/utils"
 	"github.com/maoqide/kubeutil/webshell"
 )
@@ -22,15 +21,7 @@ import (
 // PodBox provide functions for kubernetes pod.
 type PodBox struct {
 	clientset clientset.Interface
-}
-
-//NewPodBox creates a PodBox
-func NewPodBox() (*PodBox, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
-	return &PodBox{clientset: *c}, nil
+	config    *restclient.Config
 }
 
 //NewPodBoxWithClient creates a PodBox
@@ -92,10 +83,7 @@ func (b *PodBox) Exec(cmd []string, ptyHandler webshell.PtyHandler, namespace, p
 	defer func() {
 		ptyHandler.Done()
 	}()
-	cfg, err := kubeclient.Config()
-	if err != nil {
-		return err
-	}
+
 	req := b.clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
@@ -111,7 +99,7 @@ func (b *PodBox) Exec(cmd []string, ptyHandler webshell.PtyHandler, namespace, p
 		TTY:       true,
 	}, scheme.ParameterCodec)
 
-	executor, err := remotecommand.NewSPDYExecutor(cfg, "POST", req.URL())
+	executor, err := remotecommand.NewSPDYExecutor(b.config, "POST", req.URL())
 	if err != nil {
 		return err
 	}

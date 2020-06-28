@@ -3,8 +3,6 @@ package kube
 import (
 	"fmt"
 
-	kubeclient "github.com/maoqide/kubeutil/client"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,15 +14,6 @@ import (
 // StatefulSetBox provide functions for kubernetes statefulset.
 type StatefulSetBox struct {
 	clientset clientset.Interface
-}
-
-//NewStatefulSetBox creates a statefulsetBox
-func NewStatefulSetBox() (*StatefulSetBox, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
-	return &StatefulSetBox{clientset: *c}, nil
 }
 
 //NewStatefulSetBoxWithClient creates a statefulsetBox

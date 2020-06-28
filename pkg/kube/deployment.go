@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	kubeclient "github.com/maoqide/kubeutil/client"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -21,15 +19,6 @@ import (
 // DeploymentBox provide functions for kubernetes deployment.
 type DeploymentBox struct {
 	clientset clientset.Interface
-}
-
-//NewDeploymentBox creates a DeploymentBox
-func NewDeploymentBox() (*DeploymentBox, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
-	return &DeploymentBox{clientset: *c}, nil
 }
 
 //NewDeploymentBoxWithClient creates a DeploymentBox
