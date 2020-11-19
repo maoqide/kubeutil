@@ -11,12 +11,11 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	_ "github.com/maoqide/kubeutil/initialize"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	corev1 "k8s.io/api/core/v1"
 
+	_ "github.com/maoqide/kubeutil/initialize"
 	"github.com/maoqide/kubeutil/pkg/kube"
 	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
 	"github.com/maoqide/kubeutil/utils"
