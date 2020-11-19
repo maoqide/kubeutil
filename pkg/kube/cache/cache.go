@@ -35,7 +35,9 @@ func Cache() *CacheFactory {
 // BuildCacheFactory build cache factory and start informers
 func BuildCacheFactory(client *kubernetes.Interface) {
 	once.Do(func() {
-		buildCacheFactory(client)
+		if err := buildCacheFactory(client); err != nil {
+			panic(err)
+		}
 	})
 }
 

@@ -11,6 +11,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	_ "github.com/maoqide/kubeutil/initialize"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	corev1 "k8s.io/api/core/v1"
@@ -155,7 +157,7 @@ func main() {
 	// TODO
 	// temporarily use relative path, run by `go run cmd/webshell/webshell_main.go` in project root path.
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/"))))
-	// enter webshell by url like: http://127.0.0.1:8090/terminal?namespace=default&pod=nginx-65f9798fbf-jdrgl&container_name=nginx
+	// enter webshell by url like: http://127.0.0.1:8090/terminal?namespace=default&pod=nginx-65f9798fbf-jdrgl&container=nginx
 	router.HandleFunc("/terminal", serveTerminal)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container}/webshell", serveWsTerminal)
 	router.HandleFunc("/logs", serveLogs)

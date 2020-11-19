@@ -27,10 +27,7 @@ type Client struct {
 
 // GetClient get all kube resource client.
 func GetClient() (*Client, error) {
-	c, err := kubeclient.Clientset()
-	if err != nil {
-		return nil, err
-	}
+	c := kubeclient.Clientset()
 	cfg, err := kubeclient.Config()
 	if err != nil {
 		return nil, err

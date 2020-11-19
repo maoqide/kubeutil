@@ -1,6 +1,11 @@
 package initialize
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/maoqide/kubeutil/pkg/client"
+	"github.com/maoqide/kubeutil/pkg/kube/cache"
+)
 
 var (
 	// GitCommit git commit id
@@ -13,4 +18,6 @@ var (
 
 func init() {
 	fmt.Println("initializing...")
+	client.BuildClientset()
+	cache.BuildCacheFactory(client.Clientset())
 }

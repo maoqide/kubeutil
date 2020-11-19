@@ -18,7 +18,7 @@ var kubeConfigPath = utils.Env("KUBE_CONFIG_PATH", "config")
 var defaultDuration = time.Duration(time.Second * 5)
 var kubeClientset *kubernetes.Interface
 var kubeconfig *rest.Config
-var lock sync.Mutex
+var once sync.Once
 
 func setupKubeClientset() error {
 	c, err := NewKubeInClusterClient()
@@ -43,15 +43,18 @@ func setupKubeClientset() error {
 	return nil
 }
 
+// BuildClientset build cache factory and start informers
+func BuildClientset() {
+	once.Do(func() {
+		if err := setupKubeClientset(); err != nil {
+			panic(err)
+		}
+	})
+}
+
 // Clientset return clientset
-func Clientset() (*kubernetes.Interface, error) {
-	lock.Lock()
-	defer lock.Unlock()
-	if kubeClientset == nil {
-		err := setupKubeClientset()
-		return kubeClientset, err
-	}
-	return kubeClientset, nil
+func Clientset() *kubernetes.Interface {
+	return kubeClientset
 }
 
 // NewKubeInClusterClient creates an in cluster kubernetes clientset interface
