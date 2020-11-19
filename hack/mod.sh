@@ -1,4 +1,5 @@
 #!/bin/sh
 
 # download pkg to vendor
-dep ensure
+go mod tidy
+go mod vendor

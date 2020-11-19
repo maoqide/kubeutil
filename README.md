@@ -10,7 +10,7 @@ useful utils for kubernetes related development.
 
 # plan    
 TODO:    
-- [ ] using go mod    
+- [x] using go mod    
 - [ ] refactor modules    
 - [ ] operator template codes    
 - [ ] refactor kubeboxs    
