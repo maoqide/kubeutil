@@ -8,11 +8,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/maoqide/kubeutil/client"
 	cmdutil "github.com/maoqide/kubeutil/cmd"
 	"github.com/maoqide/kubeutil/controllers/demo"
 	"github.com/maoqide/kubeutil/initialize"
 	"github.com/maoqide/kubeutil/options"
+	"github.com/maoqide/kubeutil/pkg/client"
 	"github.com/maoqide/kubeutil/utils"
 )
 
