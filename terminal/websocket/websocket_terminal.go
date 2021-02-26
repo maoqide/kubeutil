@@ -1,4 +1,4 @@
-package wsterminal
+package websocket
 
 import (
 	"encoding/json"

@@ -19,7 +19,7 @@ import (
 	"github.com/maoqide/kubeutil/pkg/kube"
 	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
 	terminal "github.com/maoqide/kubeutil/terminal"
-	"github.com/maoqide/kubeutil/terminal/wsterminal"
+	wsterminal "github.com/maoqide/kubeutil/terminal/websocket"
 	"github.com/maoqide/kubeutil/utils"
 )
 
