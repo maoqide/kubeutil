@@ -18,9 +18,9 @@ import (
 	_ "github.com/maoqide/kubeutil/initialize"
 	"github.com/maoqide/kubeutil/pkg/kube"
 	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
+	terminal "github.com/maoqide/kubeutil/terminal"
+	"github.com/maoqide/kubeutil/terminal/wsterminal"
 	"github.com/maoqide/kubeutil/utils"
-	"github.com/maoqide/kubeutil/webshell"
-	"github.com/maoqide/kubeutil/webshell/wsterminal"
 )
 
 var (
@@ -78,7 +78,7 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
 	}
-	ok, err := webshell.ValidatePod(pod, containerName)
+	ok, err := terminal.ValidatePod(pod, containerName)
 	if !ok {
 		msg := fmt.Sprintf("Validate pod error! err: %v", err)
 		log.Println(msg)
@@ -125,7 +125,7 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
 	}
-	ok, err := webshell.ValidatePod(pod, containerName)
+	ok, err := terminal.ValidatePod(pod, containerName)
 	if !ok {
 		msg := fmt.Sprintf("Validate pod error! err: %v", err)
 		log.Println(msg)

@@ -1,4 +1,4 @@
-package webshell_test
+package terminal_test
 
 import (
 	"testing"

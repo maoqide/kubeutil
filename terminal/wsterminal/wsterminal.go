@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"k8s.io/client-go/tools/remotecommand"
 
-	"github.com/maoqide/kubeutil/webshell"
+	"github.com/maoqide/kubeutil/terminal"
 )
 
 var upgrader = func() websocket.Upgrader {
@@ -72,13 +72,13 @@ func (t *TerminalSession) Read(p []byte) (int, error) {
 	_, message, err := t.wsConn.ReadMessage()
 	if err != nil {
 		log.Printf("read message err: %v", err)
-		return copy(p, webshell.EndOfTransmission), err
+		return copy(p, terminal.EndOfTransmission), err
 	}
-	var msg webshell.TerminalMessage
+	var msg terminal.TerminalMessage
 	if err := json.Unmarshal([]byte(message), &msg); err != nil {
 		log.Printf("read parse message err: %v", err)
 		// return 0, nil
-		return copy(p, webshell.EndOfTransmission), err
+		return copy(p, terminal.EndOfTransmission), err
 	}
 	switch msg.Operation {
 	case "stdin":
@@ -91,13 +91,13 @@ func (t *TerminalSession) Read(p []byte) (int, error) {
 	default:
 		log.Printf("unknown message type '%s'", msg.Operation)
 		// return 0, nil
-		return copy(p, webshell.EndOfTransmission), fmt.Errorf("unknown message type '%s'", msg.Operation)
+		return copy(p, terminal.EndOfTransmission), fmt.Errorf("unknown message type '%s'", msg.Operation)
 	}
 }
 
 // Write called from remotecommand whenever there is any output
 func (t *TerminalSession) Write(p []byte) (int, error) {
-	msg, err := json.Marshal(webshell.TerminalMessage{
+	msg, err := json.Marshal(terminal.TerminalMessage{
 		Operation: "stdout",
 		Data:      string(p),
 	})

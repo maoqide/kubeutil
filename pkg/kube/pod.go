@@ -14,8 +14,8 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
+	terminal "github.com/maoqide/kubeutil/terminal"
 	"github.com/maoqide/kubeutil/utils"
-	"github.com/maoqide/kubeutil/webshell"
 )
 
 // PodBox provide functions for kubernetes pod.
@@ -79,7 +79,7 @@ func (b *PodBox) WatchPod(namespace, podName string, timeoutSeconds *int64) (wat
 }
 
 // Exec exec into a pod
-func (b *PodBox) Exec(cmd []string, ptyHandler webshell.PtyHandler, namespace, podName, containerName string) error {
+func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, podName, containerName string) error {
 	defer func() {
 		ptyHandler.Done()
 	}()

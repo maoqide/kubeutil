@@ -1,4 +1,4 @@
-package webshell
+package terminal
 
 import (
 	"fmt"
