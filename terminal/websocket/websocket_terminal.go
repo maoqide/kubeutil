@@ -3,6 +3,7 @@ package websocket
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -68,6 +69,21 @@ func (t *TerminalSession) Next() *remotecommand.TerminalSize {
 	case <-t.doneChan:
 		return nil
 	}
+}
+
+// Stdin ...
+func (t *TerminalSession) Stdin() io.Reader {
+	return t
+}
+
+// Stdout ...
+func (t *TerminalSession) Stdout() io.Writer {
+	return t
+}
+
+// Stderr ...
+func (t *TerminalSession) Stderr() io.Writer {
+	return t
 }
 
 // Read called in a loop from remotecommand as long as the process is running

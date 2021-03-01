@@ -93,9 +93,9 @@ func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, p
 	req.VersionedParams(&corev1.PodExecOptions{
 		Container: containerName,
 		Command:   cmd,
-		Stdin:     true,
-		Stdout:    true,
-		Stderr:    true,
+		Stdin:     !(ptyHandler.Stdin() == nil),
+		Stdout:    !(ptyHandler.Stdout() == nil),
+		Stderr:    !(ptyHandler.Stderr() == nil),
 		TTY:       ptyHandler.Tty(),
 	}, scheme.ParameterCodec)
 
@@ -104,9 +104,9 @@ func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, p
 		return err
 	}
 	err = executor.Stream(remotecommand.StreamOptions{
-		Stdin:             ptyHandler,
-		Stdout:            ptyHandler,
-		Stderr:            ptyHandler,
+		Stdin:             ptyHandler.Stdin(),
+		Stdout:            ptyHandler.Stdout(),
+		Stderr:            ptyHandler.Stderr(),
 		TerminalSizeQueue: ptyHandler,
 		Tty:               ptyHandler.Tty(),
 	})

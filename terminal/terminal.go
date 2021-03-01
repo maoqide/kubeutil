@@ -31,11 +31,12 @@ const (
 
 // PtyHandler is what remotecommand expects from a pty
 type PtyHandler interface {
-	io.Reader
-	io.Writer
 	remotecommand.TerminalSizeQueue
 	Done()
 	Tty() bool
+	Stdin() io.Reader
+	Stdout() io.Writer
+	Stderr() io.Writer
 }
 
 // TerminalMessage is the messaging protocol between ShellController and TerminalSession.

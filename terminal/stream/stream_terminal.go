@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"fmt"
 	"io"
 
 	"k8s.io/client-go/tools/remotecommand"
@@ -38,15 +37,6 @@ type IOStreams struct {
 	ErrOut io.Writer
 }
 
-func (s *IOStreams) Read(p []byte) (int, error) {
-	fmt.Printf("r: %s\n", string(p))
-	return s.In.Read(p)
-}
-func (s *IOStreams) Write(p []byte) (int, error) {
-	fmt.Printf("w: %s\n", string(p))
-	return s.Out.Write(p)
-}
-
 // TerminalSession implements PtyHandler, holds information pertaining to the current streaming session:
 // input/output streams, if the client is requesting a TTY, and a terminal size queue to
 // support terminal resizing.
@@ -64,6 +54,21 @@ func (t *TerminalSession) Done() {
 // Tty ...
 func (t *TerminalSession) Tty() bool {
 	return t.tty
+}
+
+// Stdin ...
+func (t *TerminalSession) Stdin() io.Reader {
+	return t.IOStreams.In
+}
+
+// Stdout ...
+func (t *TerminalSession) Stdout() io.Writer {
+	return t.IOStreams.Out
+}
+
+// Stderr ...
+func (t *TerminalSession) Stderr() io.Writer {
+	return t.IOStreams.ErrOut
 }
 
 // NewTerminalSession create TerminalSession
