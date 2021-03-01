@@ -27,12 +27,14 @@ type TerminalSession struct {
 	wsConn   *websocket.Conn
 	sizeChan chan remotecommand.TerminalSize
 	doneChan chan struct{}
+	tty      bool
 }
 
 // NewTerminalSessionWs create TerminalSession
 func NewTerminalSessionWs(conn *websocket.Conn) *TerminalSession {
 	return &TerminalSession{
 		wsConn:   conn,
+		tty:      true,
 		sizeChan: make(chan remotecommand.TerminalSize),
 		doneChan: make(chan struct{}),
 	}
@@ -46,6 +48,7 @@ func NewTerminalSession(w http.ResponseWriter, r *http.Request, responseHeader h
 	}
 	session := &TerminalSession{
 		wsConn:   conn,
+		tty:      true,
 		sizeChan: make(chan remotecommand.TerminalSize),
 		doneChan: make(chan struct{}),
 	}
@@ -110,6 +113,11 @@ func (t *TerminalSession) Write(p []byte) (int, error) {
 		return 0, err
 	}
 	return len(p), nil
+}
+
+// Tty ...
+func (t *TerminalSession) Tty() bool {
+	return t.tty
 }
 
 // Close close session

@@ -96,7 +96,7 @@ func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, p
 		Stdin:     true,
 		Stdout:    true,
 		Stderr:    true,
-		TTY:       true,
+		TTY:       ptyHandler.Tty(),
 	}, scheme.ParameterCodec)
 
 	executor, err := remotecommand.NewSPDYExecutor(b.config, "POST", req.URL())
@@ -108,7 +108,7 @@ func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, p
 		Stdout:            ptyHandler,
 		Stderr:            ptyHandler,
 		TerminalSizeQueue: ptyHandler,
-		Tty:               true,
+		Tty:               ptyHandler.Tty(),
 	})
 	return err
 }

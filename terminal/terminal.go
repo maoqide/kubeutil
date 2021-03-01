@@ -35,6 +35,7 @@ type PtyHandler interface {
 	io.Writer
 	remotecommand.TerminalSizeQueue
 	Done()
+	Tty() bool
 }
 
 // TerminalMessage is the messaging protocol between ShellController and TerminalSession.
