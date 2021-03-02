@@ -13,14 +13,15 @@ func TestCopy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err1: %v", err)
 	}
-	cpOpt := CopyOptions{
+	cpOpt := Options{
 		client:        client,
 		podName:       "nginx-deployment-8d8d4dc86-sqfcx",
 		namespace:     "default",
 		containerName: "nginx",
 	}
-	err = cpOpt.CopyFromPod("root/sss", "./ss")
+	_, _, err = cpOpt.CopyFromPod("root/ssss")
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
+
 }
