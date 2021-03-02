@@ -23,6 +23,15 @@ var (
 	addr = flag.String("addr", ":8091", "http service address")
 )
 
+func serveFile(w http.ResponseWriter, r *http.Request) {
+	// auth
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "./frontend/file.html")
+}
+
 func download(w http.ResponseWriter, r *http.Request) {
 
 	pathParams := mux.Vars(r)
@@ -64,8 +73,9 @@ func download(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
+	router.HandleFunc("/file", serveFile)
 	// http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download\?file\=/root/sss
-	// curl http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download\?file\=/root/ss -o xxx.tar
+	// curl http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download\?file\=/root/sss -o xxx.tar
 	router.HandleFunc("/copy/{namespace}/{pod}/{container}/download", download)
 	log.Fatal(http.ListenAndServe(*addr, router))
 }
