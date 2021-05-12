@@ -18,8 +18,8 @@ import (
 	_ "github.com/maoqide/kubeutil/initialize"
 	"github.com/maoqide/kubeutil/pkg/kube"
 	kubeLog "github.com/maoqide/kubeutil/pkg/kube/log"
-	terminal "github.com/maoqide/kubeutil/terminal"
-	wsterminal "github.com/maoqide/kubeutil/terminal/websocket"
+	terminal "github.com/maoqide/kubeutil/pkg/terminal"
+	wsterminal "github.com/maoqide/kubeutil/pkg/terminal/websocket"
 	"github.com/maoqide/kubeutil/utils"
 )
 

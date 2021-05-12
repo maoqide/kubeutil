@@ -6,7 +6,7 @@ import (
 
 	"github.com/maoqide/kubeutil/pkg/client"
 	"github.com/maoqide/kubeutil/pkg/kube"
-	"github.com/maoqide/kubeutil/terminal/stream"
+	"github.com/maoqide/kubeutil/pkg/terminal/stream"
 )
 
 func TestExec(t *testing.T) {
