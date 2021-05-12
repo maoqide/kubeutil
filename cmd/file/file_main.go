@@ -5,9 +5,9 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -58,15 +58,8 @@ func download(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	buffer := new(bytes.Buffer)
-	buffer.ReadFrom(reader)
-	data := buffer.Bytes()
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/text/plain")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.tar", fileName))
-	w.Header().Set("Accept-Length", fmt.Sprintf("%d", len(data)))
-	w.Write(data)
+	io.Copy(w, reader)
 	return
 }
 
@@ -74,7 +67,7 @@ func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
 	router.HandleFunc("/file", serveFile)
-	// http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download\?file\=/root/sss
+	// http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download?file=/root/sss
 	// curl http://127.0.0.1:8091/copy/default/nginx-deployment-8d8d4dc86-sqfcx/nginx/download\?file\=/root/sss -o xxx.tar
 	router.HandleFunc("/copy/{namespace}/{pod}/{container}/download", download)
 	log.Fatal(http.ListenAndServe(*addr, router))
