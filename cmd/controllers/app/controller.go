@@ -16,6 +16,8 @@ import (
 	"github.com/maoqide/kubeutil/utils"
 )
 
+var kubeConfigPath = utils.Env("KUBE_CONFIG_PATH", "config")
+
 // NewKubeCommand creates a *cobra.Command object with default parameters
 func NewKubeCommand() *cobra.Command {
 	opt, err := options.NewkubeOptions()
@@ -54,7 +56,7 @@ func printHelp() {
 }
 
 func run(stopCh <-chan struct{}) {
-	kubeConfig, _ := utils.ReadFile("./config")
+	kubeConfig, _ := utils.ReadFile(kubeConfigPath)
 	kubeC, _ := client.NewKubeOutClusterClient(kubeConfig)
 	sharedInformerFactory, _ := client.NewSharedInformerFactory(kubeC)
 	demoController := demo.NewDemoController(

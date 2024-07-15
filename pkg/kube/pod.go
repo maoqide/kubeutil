@@ -2,6 +2,7 @@ package kube
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 
@@ -24,26 +25,26 @@ type PodBox struct {
 	config    *restclient.Config
 }
 
-//NewPodBoxWithClient creates a PodBox
+// NewPodBoxWithClient creates a PodBox
 func NewPodBoxWithClient(c *clientset.Interface) *PodBox {
 	return &PodBox{clientset: *c}
 }
 
 // Get get specified pod in specified namespace.
-func (b *PodBox) Get(name, namespace string) (*corev1.Pod, error) {
+func (b *PodBox) Get(ctx context.Context, name, namespace string) (*corev1.Pod, error) {
 	opt := metav1.GetOptions{}
-	return b.clientset.CoreV1().Pods(namespace).Get(name, opt)
+	return b.clientset.CoreV1().Pods(namespace).Get(ctx, name, opt)
 }
 
 // List list pods in specified namespace.
-func (b *PodBox) List(namespace, labelSelector string) (*corev1.PodList, error) {
+func (b *PodBox) List(ctx context.Context, namespace, labelSelector string) (*corev1.PodList, error) {
 	opt := metav1.ListOptions{LabelSelector: labelSelector}
-	return b.clientset.CoreV1().Pods(namespace).List(opt)
+	return b.clientset.CoreV1().Pods(namespace).List(ctx, opt)
 }
 
 // Exists check if pod exists.
-func (b *PodBox) Exists(name, namespace string) (bool, error) {
-	_, err := b.Get(name, namespace)
+func (b *PodBox) Exists(ctx context.Context, name, namespace string) (bool, error) {
+	_, err := b.Get(ctx, name, namespace)
 	if err == nil {
 		return true, nil
 	} else if apierrors.IsNotFound(err) {
@@ -53,19 +54,19 @@ func (b *PodBox) Exists(name, namespace string) (bool, error) {
 }
 
 // Create creates a pod
-func (b *PodBox) Create(pod *corev1.Pod, namespace string) (*corev1.Pod, error) {
-	return b.clientset.CoreV1().Pods(namespace).Create(pod)
+func (b *PodBox) Create(ctx context.Context, pod *corev1.Pod, namespace string) (*corev1.Pod, error) {
+	return b.clientset.CoreV1().Pods(namespace).Create(ctx, pod, metav1.CreateOptions{})
 }
 
 // Watch watch pod in specified namespace with timeoutSeconds
-func (b *PodBox) Watch(namespace string, timeoutSeconds *int64, labelSelector string) (watch.Interface, error) {
+func (b *PodBox) Watch(ctx context.Context, namespace string, timeoutSeconds *int64, labelSelector string) (watch.Interface, error) {
 	opt := metav1.ListOptions{TimeoutSeconds: timeoutSeconds, LabelSelector: labelSelector}
-	return b.clientset.CoreV1().Pods(namespace).Watch(opt)
+	return b.clientset.CoreV1().Pods(namespace).Watch(ctx, opt)
 }
 
 // WatchPod watch specified pod in specified namespace with timeoutSeconds
-func (b *PodBox) WatchPod(namespace, podName string, timeoutSeconds *int64) (watch.Interface, error) {
-	pod, err := b.Get(podName, namespace)
+func (b *PodBox) WatchPod(ctx context.Context, namespace, podName string, timeoutSeconds *int64) (watch.Interface, error) {
+	pod, err := b.Get(ctx, podName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func (b *PodBox) WatchPod(namespace, podName string, timeoutSeconds *int64) (wat
 		FieldSelector:   fmt.Sprintf("metadata.name=%s", podName),
 		ResourceVersion: pod.ResourceVersion,
 	}
-	w, err := b.clientset.CoreV1().Pods(namespace).Watch(opt)
+	w, err := b.clientset.CoreV1().Pods(namespace).Watch(ctx, opt)
 	return w, err
 }
 
@@ -119,9 +120,9 @@ func (b *PodBox) Logs(name, namespace string, opts *corev1.PodLogOptions) *restc
 }
 
 // LogStream get logs of specified pod in specified namespace and copy to writer.
-func (b *PodBox) LogStream(name, namespace string, opts *corev1.PodLogOptions, writer io.Writer) error {
+func (b *PodBox) LogStream(ctx context.Context, name, namespace string, opts *corev1.PodLogOptions, writer io.Writer) error {
 	req := b.Logs(name, namespace, opts)
-	r, err := req.Stream()
+	r, err := req.Stream(ctx)
 	if err != nil {
 		return err
 	}
@@ -131,9 +132,9 @@ func (b *PodBox) LogStream(name, namespace string, opts *corev1.PodLogOptions, w
 }
 
 // LogStreamLine get logs of specified pod in specified namespace and copy to writer.
-func (b *PodBox) LogStreamLine(name, namespace string, opts *corev1.PodLogOptions, writer io.Writer) error {
+func (b *PodBox) LogStreamLine(ctx context.Context, name, namespace string, opts *corev1.PodLogOptions, writer io.Writer) error {
 	req := b.Logs(name, namespace, opts)
-	r, err := req.Stream()
+	r, err := req.Stream(ctx)
 	if err != nil {
 		return err
 	}
@@ -160,7 +161,7 @@ func (b *PodBox) LogStreamLine(name, namespace string, opts *corev1.PodLogOption
 }
 
 // Delete delete pod
-func (b *PodBox) Delete(name, namespace string) error {
+func (b *PodBox) Delete(ctx context.Context, name, namespace string) error {
 	opt := commonDeleteOpt
-	return b.clientset.CoreV1().Pods(namespace).Delete(name, &opt)
+	return b.clientset.CoreV1().Pods(namespace).Delete(ctx, name, opt)
 }

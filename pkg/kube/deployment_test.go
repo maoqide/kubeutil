@@ -1,6 +1,7 @@
 package kube_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/maoqide/kubeutil/pkg/kube"
@@ -22,11 +23,11 @@ func TestDeployment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err2: %v", err)
 	}
-	_, err = client.DeploymentBox.Create(deployment, "default")
+	_, err = client.DeploymentBox.Create(context.TODO(), deployment, "default")
 	if err != nil {
 		t.Fatalf("err3: %v", err)
 	}
-	d, err := client.DeploymentBox.Get(deployment.Name, "default")
+	d, err := client.DeploymentBox.Get(context.TODO(), deployment.Name, "default")
 	if err != nil {
 		t.Fatalf("err4: %v", err)
 	}

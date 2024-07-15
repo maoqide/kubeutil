@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -73,7 +74,7 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
 	}
-	pod, err := client.PodBox.Get(podName, namespace)
+	pod, err := client.PodBox.Get(context.TODO(), podName, namespace)
 	if err != nil {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
@@ -120,7 +121,7 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
 	}
-	pod, err := client.PodBox.Get(podName, namespace)
+	pod, err := client.PodBox.Get(context.TODO(), podName, namespace)
 	if err != nil {
 		log.Printf("get kubernetes client failed: %v\n", err)
 		return
@@ -140,7 +141,7 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 		TailLines: &tailLine,
 	}
 
-	err = client.PodBox.LogStreamLine(podName, namespace, &opt, writer)
+	err = client.PodBox.LogStreamLine(context.TODO(), podName, namespace, &opt, writer)
 	if err != nil {
 		msg := fmt.Sprintf("log err: %v", err)
 		log.Println(msg)

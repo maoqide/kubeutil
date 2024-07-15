@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -15,14 +16,13 @@ func Die(stopCh chan struct{}) {
 
 func Wait(f func(), stopCh chan struct{}) {
 	fmt.Println("waiting...")
-	exit := make(chan os.Signal)
-	// signal.Notify(exit, os.Kill, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT)
-	signal.Notify(exit, os.Kill, os.Interrupt)
+	exit := make(chan os.Signal, 1) // Buffer size set to 1 to ensure signal is caught
+	signal.Notify(exit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	for {
 		select {
 		case <-exit:
 			close(stopCh)
-			f()
+			f() // Call the cleanup function
 			return
 		}
 	}

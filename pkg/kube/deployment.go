@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -21,27 +22,27 @@ type DeploymentBox struct {
 	clientset clientset.Interface
 }
 
-//NewDeploymentBoxWithClient creates a DeploymentBox
+// NewDeploymentBoxWithClient creates a DeploymentBox
 func NewDeploymentBoxWithClient(c *clientset.Interface) *DeploymentBox {
 	return &DeploymentBox{clientset: *c}
 }
 
 // Get get specified deployment in specified namespace.
-func (b *DeploymentBox) Get(name, namespace string) (*appsv1.Deployment, error) {
+func (b *DeploymentBox) Get(ctx context.Context, name, namespace string) (*appsv1.Deployment, error) {
 	opt := metav1.GetOptions{}
-	return b.clientset.AppsV1().Deployments(namespace).Get(name, opt)
+	return b.clientset.AppsV1().Deployments(namespace).Get(ctx, name, opt)
 }
 
 // List list deployments in specified namespace.
-func (b *DeploymentBox) List(namespace string) (*appsv1.DeploymentList, error) {
+func (b *DeploymentBox) List(ctx context.Context, namespace string) (*appsv1.DeploymentList, error) {
 	opt := metav1.ListOptions{}
-	l, err := b.clientset.AppsV1().Deployments(namespace).List(opt)
+	l, err := b.clientset.AppsV1().Deployments(namespace).List(ctx, opt)
 	return l, err
 }
 
 // Exists check if deployment exists.
-func (b *DeploymentBox) Exists(name, namespace string) (bool, error) {
-	_, err := b.Get(name, namespace)
+func (b *DeploymentBox) Exists(ctx context.Context, name, namespace string) (bool, error) {
+	_, err := b.Get(ctx, name, namespace)
 	if err == nil {
 		return true, nil
 	} else if apierrors.IsNotFound(err) {
@@ -51,26 +52,26 @@ func (b *DeploymentBox) Exists(name, namespace string) (bool, error) {
 }
 
 // Create creates a deployment
-func (b *DeploymentBox) Create(deployment *appsv1.Deployment, namespace string) (*appsv1.Deployment, error) {
-	return b.clientset.AppsV1().Deployments(namespace).Create(deployment)
+func (b *DeploymentBox) Create(ctx context.Context, deployment *appsv1.Deployment, namespace string) (*appsv1.Deployment, error) {
+	return b.clientset.AppsV1().Deployments(namespace).Create(ctx, deployment, metav1.CreateOptions{})
 }
 
 // Watch watch deployment in specified namespace with timeoutSeconds
-func (b *DeploymentBox) Watch(namespace, labelSelector string, timeoutSeconds *int64) (watch.Interface, error) {
+func (b *DeploymentBox) Watch(ctx context.Context, namespace, labelSelector string, timeoutSeconds *int64) (watch.Interface, error) {
 	// labelSelector: example "app", "app=test-app"
 	opt := metav1.ListOptions{TimeoutSeconds: timeoutSeconds, LabelSelector: labelSelector}
-	w, err := b.clientset.AppsV1().Deployments(namespace).Watch(opt)
+	w, err := b.clientset.AppsV1().Deployments(namespace).Watch(ctx, opt)
 	if apierrors.IsNotFound(err) {
 		// for kubernetes cluster with low version.
-		w, err = b.clientset.ExtensionsV1beta1().Deployments(namespace).Watch(opt)
+		w, err = b.clientset.ExtensionsV1beta1().Deployments(namespace).Watch(context.TODO(), opt)
 	}
 
 	return w, err
 }
 
 // WatchDeployment watch specified deployment in specified namespace with timeoutSeconds
-func (b *DeploymentBox) WatchDeployment(namespace, deploymentName string, timeoutSeconds *int64) (watch.Interface, error) {
-	deploy, err := b.Get(deploymentName, namespace)
+func (b *DeploymentBox) WatchDeployment(ctx context.Context, namespace, deploymentName string, timeoutSeconds *int64) (watch.Interface, error) {
+	deploy, err := b.Get(ctx, deploymentName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -79,29 +80,29 @@ func (b *DeploymentBox) WatchDeployment(namespace, deploymentName string, timeou
 		FieldSelector:   fmt.Sprintf("metadata.name=%s", deploymentName),
 		ResourceVersion: deploy.ResourceVersion,
 	}
-	w, err := b.clientset.AppsV1().Deployments(namespace).Watch(opt)
+	w, err := b.clientset.AppsV1().Deployments(namespace).Watch(ctx, opt)
 	if apierrors.IsNotFound(err) {
 		// for kubernetes cluster with low version.
-		w, err = b.clientset.ExtensionsV1beta1().Deployments(namespace).Watch(opt)
+		w, err = b.clientset.ExtensionsV1beta1().Deployments(namespace).Watch(ctx, opt)
 	}
 
 	return w, err
 }
 
 // Delete delete deployment
-func (b *DeploymentBox) Delete(name, namespace string) error {
+func (b *DeploymentBox) Delete(ctx context.Context, name, namespace string) error {
 	opt := commonDeleteOpt
-	return b.clientset.AppsV1().Deployments(namespace).Delete(name, &opt)
+	return b.clientset.AppsV1().Deployments(namespace).Delete(ctx, name, opt)
 }
 
 // Patch patch deployment
-func (b *DeploymentBox) Patch(name, namespace string, data []byte) (*appsv1.Deployment, error) {
-	return b.clientset.AppsV1().Deployments(namespace).Patch(name, patchtypes.StrategicMergePatchType, data)
+func (b *DeploymentBox) Patch(ctx context.Context, name, namespace string, data []byte) (*appsv1.Deployment, error) {
+	return b.clientset.AppsV1().Deployments(namespace).Patch(ctx, name, patchtypes.StrategicMergePatchType, data, metav1.PatchOptions{})
 }
 
 // Scale scale deployment replicas
-func (b *DeploymentBox) Scale(name, namespace string, replicas int32) error {
-	scale, err := b.clientset.AppsV1().Deployments(namespace).GetScale(name, metav1.GetOptions{})
+func (b *DeploymentBox) Scale(ctx context.Context, name, namespace string, replicas int32) error {
+	scale, err := b.clientset.AppsV1().Deployments(namespace).GetScale(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -109,12 +110,12 @@ func (b *DeploymentBox) Scale(name, namespace string, replicas int32) error {
 
 	// retry in case of OptimisticLockErrorMsg when resourceversion changed before scale
 	if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		scale, err := b.clientset.AppsV1().Deployments(namespace).GetScale(name, metav1.GetOptions{})
+		scale, err := b.clientset.AppsV1().Deployments(namespace).GetScale(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 		scale.Spec.Replicas = replicas
-		_, err = b.clientset.AppsV1().Deployments(namespace).UpdateScale(name, scale)
+		_, err = b.clientset.AppsV1().Deployments(namespace).UpdateScale(ctx, name, scale, metav1.UpdateOptions{})
 		return err
 	}); err != nil {
 		return err
@@ -124,8 +125,8 @@ func (b *DeploymentBox) Scale(name, namespace string, replicas int32) error {
 }
 
 // GetLatestReplicaSet get latest replicaSet of deployment
-func (b *DeploymentBox) GetLatestReplicaSet(name, namespace string) (*appsv1.Deployment, string, error) {
-	deployment, err := b.Get(name, namespace)
+func (b *DeploymentBox) GetLatestReplicaSet(ctx context.Context, name, namespace string) (*appsv1.Deployment, string, error) {
+	deployment, err := b.Get(ctx, name, namespace)
 	if err != nil {
 		return nil, "", err
 	}
@@ -136,7 +137,7 @@ func (b *DeploymentBox) GetLatestReplicaSet(name, namespace string) (*appsv1.Dep
 	}
 
 	opt := metav1.ListOptions{LabelSelector: labelSelector.String()}
-	replicasets, err := b.clientset.AppsV1().ReplicaSets(namespace).List(opt)
+	replicasets, err := b.clientset.AppsV1().ReplicaSets(namespace).List(ctx, opt)
 	if err != nil {
 		return nil, "", err
 	}
@@ -149,8 +150,8 @@ func (b *DeploymentBox) GetLatestReplicaSet(name, namespace string) (*appsv1.Dep
 }
 
 // GetPods get pods of deployment
-func (b *DeploymentBox) GetPods(name, namespace string) (*corev1.PodList, error) {
-	deployment, err := b.Get(name, namespace)
+func (b *DeploymentBox) GetPods(ctx context.Context, name, namespace string) (*corev1.PodList, error) {
+	deployment, err := b.Get(ctx, name, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (b *DeploymentBox) GetPods(name, namespace string) (*corev1.PodList, error)
 		return nil, err
 	}
 	opt := metav1.ListOptions{LabelSelector: labelSelector.String()}
-	podList, err := b.clientset.CoreV1().Pods(namespace).List(opt)
+	podList, err := b.clientset.CoreV1().Pods(namespace).List(ctx, opt)
 	return podList, nil
 }
 
