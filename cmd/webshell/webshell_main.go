@@ -87,7 +87,6 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 		log.Println(msg)
 		pty.Write([]byte(msg))
 	}
-	return
 }
 
 func serveWsLogs(w http.ResponseWriter, r *http.Request) {
@@ -141,7 +140,6 @@ func serveWsLogs(w http.ResponseWriter, r *http.Request) {
 		writer.Write([]byte(msg))
 		writer.Close()
 	}
-	return
 }
 
 func main() {

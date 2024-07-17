@@ -28,15 +28,15 @@ function connect(){
 	if (window["WebSocket"]) {
 		term.open(document.getElementById("terminal"));
 		term.write("connecting to pod "+ pod + "...")
-		term.fit();
-		// term.toggleFullScreen(true);
+		window.addEventListener('resize', () => term.fit());
+
 		term.on('data', function (data) {
 			msg = {operation: "stdin", data: data}
 			conn.send(JSON.stringify(msg))
 		});
 		term.on('resize', function (size) {
-			console.log("resize: " + size)
-			msg = {operation: "resize", cols: size.cols, rows: rows}
+			console.log("resize: " + size.cols + " x " + size.rows);
+			msg = {operation: "resize", cols: size.cols, rows: size.rows}
 			conn.send(JSON.stringify(msg))
 		});
 
@@ -45,7 +45,8 @@ function connect(){
 			term.write("\r");
 			msg = {operation: "stdin", data: "export TERM=xterm && clear \r"}
 			conn.send(JSON.stringify(msg))
-			// term.clear()
+			term.fit();
+			term.focus();
 		};
 		conn.onmessage = function(event) {
 			msg = JSON.parse(event.data)
