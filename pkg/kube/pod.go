@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/httpstream"
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -81,9 +82,6 @@ func (b *PodBox) WatchPod(ctx context.Context, namespace, podName string, timeou
 
 // Exec exec into a pod
 func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, podName, containerName string) error {
-	defer func() {
-		ptyHandler.Done()
-	}()
 
 	req := b.clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
@@ -100,11 +98,20 @@ func (b *PodBox) Exec(cmd []string, ptyHandler terminal.PtyHandler, namespace, p
 		TTY:       ptyHandler.Tty(),
 	}, scheme.ParameterCodec)
 
-	executor, err := remotecommand.NewSPDYExecutor(b.config, "POST", req.URL())
+	// executor, err := remotecommand.NewSPDYExecutor(b.config, "POST", req.URL())
+
+	executorWs, err := remotecommand.NewWebSocketExecutor(b.config, "POST", req.URL().String())
 	if err != nil {
 		return err
 	}
-	err = executor.Stream(remotecommand.StreamOptions{
+	executorSpdy, err := remotecommand.NewSPDYExecutor(b.config, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+
+	executor, err := remotecommand.NewFallbackExecutor(executorWs, executorSpdy, httpstream.IsUpgradeFailure)
+
+	err = executor.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
 		Stdin:             ptyHandler.Stdin(),
 		Stdout:            ptyHandler.Stdout(),
 		Stderr:            ptyHandler.Stderr(),

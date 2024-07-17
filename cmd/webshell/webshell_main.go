@@ -11,9 +11,9 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	corev1 "k8s.io/api/core/v1"
 
 	_ "github.com/maoqide/kubeutil/initialize"
@@ -28,11 +28,6 @@ var (
 	addr = flag.String("addr", ":8090", "http service address")
 	cmd  = []string{"/bin/sh"}
 )
-
-func internalError(ws *websocket.Conn, msg string, err error) {
-	log.Println(msg, err)
-	ws.WriteMessage(websocket.TextMessage, []byte("Internal server error."))
-}
 
 func serveTerminal(w http.ResponseWriter, r *http.Request) {
 	// auth
@@ -84,7 +79,6 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("Validate pod error! err: %v", err)
 		log.Println(msg)
 		pty.Write([]byte(msg))
-		pty.Done()
 		return
 	}
 	err = client.PodBox.Exec(cmd, pty, namespace, podName, containerName)
@@ -92,7 +86,6 @@ func serveWsTerminal(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("Exec to pod error! err: %v", err)
 		log.Println(msg)
 		pty.Write([]byte(msg))
-		pty.Done()
 	}
 	return
 }
@@ -162,5 +155,11 @@ func main() {
 	router.HandleFunc("/ws/{namespace}/{pod}/{container}/webshell", serveWsTerminal)
 	router.HandleFunc("/logs", serveLogs)
 	router.HandleFunc("/ws/{namespace}/{pod}/{container}/logs", serveWsLogs)
-	log.Fatal(http.ListenAndServe(*addr, router))
+	server := http.Server{
+		Addr:         *addr,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+		Handler:      router,
+	}
+	log.Fatal(server.ListenAndServe())
 }

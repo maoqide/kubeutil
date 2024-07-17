@@ -32,7 +32,7 @@ const (
 // PtyHandler is what remotecommand expects from a pty
 type PtyHandler interface {
 	remotecommand.TerminalSizeQueue
-	Done()
+	// Done()
 	Tty() bool
 	Stdin() io.Reader
 	Stdout() io.Writer
